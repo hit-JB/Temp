@@ -1,18 +1,10 @@
-import org.junit.Test;
-
 import java.util.*;
 
 public class Solution {
     public static void main(String[] args) {
         Solution sol = new Solution();
-//        int[] nums = {536870912,0,534710168,330218644,142254206};
-//        int[][] queries =  {{558240772,1000000000},{307628050,1000000000},{3319300,1000000000},
-//                {2751604,683297522},{214004,404207941}};
-//        int[] ret = sol.maximizeXor(nums,queries);
-//        for(int e:ret)
-//            System.out.println(e);
-        int[][] nums = {{2,1},{3,4},{3,2}};
-        System.out.println(sol.restoreArray(nums));
+        TreeNode root = new TreeNode(3,new TreeNode(9),new TreeNode(20,new TreeNode(15),new TreeNode(7)));
+        System.out.println(sol.verticalTraversal(root));
     }
     public static void listForeach(ListNode listNode){
         while (listNode!=null) {
@@ -421,26 +413,26 @@ public class Solution {
         }
 
     }
-    public Node copyRandomList(Node head) {
+    public Node_ copyRandomList(Node_ head) {
         if(head==null)
             return null;
-        Node node = new Node(head.val);
-        Node ret = node;
-        Map<Node,Node> pairNode = new HashMap<>();
-        Node start = head;
+        Node_ node = new Node_(head.val);
+        Node_ ret = node;
+        Map<Node_,Node_> pairNode = new HashMap<>();
+        Node_ start = head;
         pairNode.put(head,node);
         while(start!=null){
             if(pairNode.containsKey(start.next)){
                 node.next = pairNode.get(start.next);
             }else{
-                node.next = start.next==null?null:new Node(start.next.val);
+                node.next = start.next==null?null:new Node_(start.next.val);
                 pairNode.put(start.next,node.next);
             }
 
             if(pairNode.containsKey(start.random)){
                 node.random = pairNode.get(start.random);
             }else{
-                node.random = start.random==null?null:new Node(start.random.val);
+                node.random = start.random==null?null:new Node_(start.random.val);
                 pairNode.put(start.random,node.random);
             }
 
@@ -610,4 +602,427 @@ public class Solution {
         }
         return ret;
     }
+    public int longestSubarray(int[] nums) {
+        return 0;
+    }
+    public boolean pyramidTransition(String bottom, List<String> allowed) {
+        Map<String,List<Character>> map = new HashMap<>();
+        for(String e:allowed){
+            map.computeIfAbsent(e.substring(0, 2), k -> new ArrayList<>());
+            map.get(e.substring(0,2)).add(e.charAt(2));
+        }
+        return dfsPyramid(map,bottom);
+    }
+    public boolean dfsPyramid(Map<String,List<Character>> map,String bottom){
+        if(bottom.length()==1)
+            return true;
+        boolean is;
+        List<String> ret = new ArrayList<>();
+        getNextFloor(map,bottom,"",0,ret);
+        if(ret.size()==0)
+            return false;
+        for(String e:ret){
+            is = dfsPyramid(map,e);
+            if(is)return true;
+        }
+        return false;
+    }
+    public void getNextFloor(Map<String,List<Character>> map,
+                             String button, String s,int i,List<String> ret
+                            ){
+
+        if(i==button.length()-1)
+        {
+            ret.add(s);
+            return;
+        }
+        String e = button.substring(i,i+2);
+        List<Character> list = map.getOrDefault(e,null);
+        if(list==null) {
+            return;
+        }
+        for(Character c:list)
+        {
+            getNextFloor(map,button,s+c,i+1,ret);
+        }
+    }
+    public int minOperations(int[] target, int[] arr) {
+        TreeSet<Integer> tree = new TreeSet<>();
+        Map<Integer,Integer> map = new HashMap<>();
+        for(int i=0;i<target.length;i++){
+            map.put(target[i],i);
+        }
+        int[] local = new int[arr.length];
+        for(int i=0;i<arr.length;i++) {
+            Integer loc = map.getOrDefault(arr[i], null) ;
+            local[i] = loc==null?-1:loc;
+        }
+        for (int j : local) {
+            if (j == -1)
+                continue;
+            if (tree.isEmpty() || j > tree.last()) {
+            }
+            else {
+                Integer e = tree.floor(j);
+                if (e != null) {
+                    tree.remove(e);
+                }
+            }
+            tree.add(j);
+        }
+        return target.length-tree.size();
+    }
+    public int longestCommonSubsequence(String text1, String text2) {
+        int[][] dp = new int[text1.length()][text2.length()];
+        for(int i=0;i<dp.length;i++){
+            dp[i][0] = text1.substring(0,i+1).indexOf(text2.charAt(0))==-1?0:1;
+            for(int j=1;j<dp[0].length;j++){
+                if(i==0)
+                    dp[i][j] = text2.substring(0,j+1).indexOf(text1.charAt(0))==-1?0:1;
+                else{
+                    int loc = text1.substring(0,i+1).lastIndexOf(text2.charAt(j));
+                    dp[i][j] =dp[i][j-1];
+                   if(loc!=-1){
+                       if(loc==0) {
+                           dp[i][j] = Math.max(dp[i][j],1);
+                       }
+                       else
+                        dp[i][j] = Math.max(dp[i][j],dp[loc-1][j-1]+1);
+                   }
+                }
+            }
+        }
+        return dp[dp.length-1][dp[0].length-1];
+    }
+    public int findSecondMinimumValue(TreeNode root) {
+        int[] min= findSecondAndFirst(root);
+        return min[1];
+    }
+    public int[] findSecondAndFirst(TreeNode root){
+        if(root.left==null){
+            return new int[]{root.val,root.val};
+        }
+        int[] left = findSecondAndFirst(root.left),
+                right = findSecondAndFirst(root.right);
+        Set<Integer> set = new HashSet<>();
+        for(int e:left)
+            set.add(e);
+        for(int e:right)
+            set.add(e);
+        set.add(root.val);
+        List<Integer> list = new ArrayList<>(set);
+        list.sort(Integer::compare);
+        if(list.size()==1)
+            return new int[]{list.get(0),list.get(0)};
+        return new int[]{list.get(0),list.get(1)};
+    }
+    public int eatenApples(int[] apples, int[] days) {
+        PriorityQueue<int[]> queue = new PriorityQueue<>(Comparator.comparingInt(e -> e[0]));
+        int sum = 0;
+        int day = 0;
+        do
+        {
+            if(day<apples.length && apples[day]!=0)
+                 queue.add(new int[]{day+days[day],apples[day]});
+            int[] e= queue.peek();
+            if(queue.isEmpty() && day<apples.length)
+            {
+                day++;continue;
+            }
+            if(e[0] > day && e[1]>0){
+                e[1]--;
+                sum++;
+                day++;
+            }else{
+                queue.remove();
+            }
+        }while(!queue.isEmpty() || day < apples.length);
+        return sum;
+    }
+    public int findBottomLeftValue(TreeNode root) {
+        Queue<TreeNode> treeNodes = new ArrayDeque<>();
+        TreeNode bottom_left = root;
+        treeNodes.add(root);
+        while(!treeNodes.isEmpty()){
+            int size = treeNodes.size();
+            bottom_left = treeNodes.peek();
+            for(int i=0;i<size;i++){
+                TreeNode node = treeNodes.remove();
+                if(node.left!=null)
+                    treeNodes.add(node.left);
+                if(node.right!=null)
+                    treeNodes.add(node.right);
+            }
+        }
+        assert bottom_left != null;
+        return bottom_left.val;
+    }
+    public int numWays(String s) {
+        List<Integer> loc = new ArrayList<>();
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i)=='1')
+                loc.add(i);
+        }
+        int size = loc.size();
+        if(size % 3!=0)
+            return 0;
+        long mod = (long)10e9+7;
+        if(size==0)
+        {
+            long length = s.length()-1;
+            return (int)((length * (length-1)  / 2) % mod);
+        }
+        long index1 = loc.get(size / 3-1),index2 = loc.get(size / 3),
+                index3 = loc.get(size / 3  *2-1),index4 = loc.get(size / 3 * 2);
+        return (int) (((index2-index1) * (index4-index3)) % mod );
+    }
+    public List<Integer> distanceK(TreeNode root, TreeNode target, int k) {
+        TreeNodeWithParent[] start = new TreeNodeWithParent[1];
+        convert(null,new TreeNodeWithParent(root.val),root,target.val,start);
+        Queue<TreeNodeWithParent> queue = new ArrayDeque<>();
+        queue.add(start[0]);
+        List<Integer> ret = new ArrayList<>();
+        if(k==0)
+        {
+            ret.add(start[0].val);
+            return ret;
+        }
+        Set<TreeNodeWithParent> visited = new HashSet<>();
+        visited.add(start[0]);
+        int step = 0;
+        while(!queue.isEmpty()){
+            int size = queue.size();
+            step++;
+            for(int i=0;i<size;i++){
+                TreeNodeWithParent top = queue.poll();
+                if(top.left!=null && !visited.contains(top.left))
+                {
+                    queue.add(top.left);
+                    visited.add(top.left);
+                }
+                if(top.right!=null && !visited.contains(top.right))
+                {
+                    queue.add(top.right);
+                    visited.add(top.right);
+                }
+                if(top.parent!=null && !visited.contains(top.parent))
+                {
+                    queue.add(top.parent);
+                    visited.add(top.parent);
+                }
+            }
+            if(step==k)
+            {
+                for(TreeNodeWithParent e:queue)
+                    ret.add(e.val);
+                return ret;
+            }
+        }
+        return null;
+    }
+    public void convert(TreeNodeWithParent parent,TreeNodeWithParent convertNode,
+                        TreeNode root, int target,TreeNodeWithParent[] start){
+        if(root.left!=null)
+        {
+            convertNode.left = new TreeNodeWithParent(root.left.val);
+            convert(convertNode,convertNode.left,root.left,target,start);
+        }
+        convertNode.parent = parent;
+        if(convertNode.val==target)
+            start[0] = convertNode;
+        if(root.right!=null){
+            convertNode.right = new TreeNodeWithParent(root.right.val);
+            convert(convertNode,convertNode.right,root.right,target,start);
+        }
+    }
+    public static class TreeNodeWithParent{
+         TreeNodeWithParent parent;
+         TreeNodeWithParent left;
+         TreeNodeWithParent right;
+         int val;
+        public TreeNodeWithParent(int val){
+            this.val = val;
+        }
+    }
+    public int chalkReplacer(int[] chalk, int k) {
+        int length = chalk.length;
+        long[] sum = new long[chalk.length];
+        sum[0] = chalk[0];
+        for(int i=1;i<length;i++){
+            sum[i] = sum[i-1]+chalk[i];
+        }
+        long count = k / sum[length-1];
+        long remain = k - count * sum[length-1];
+        int loc = divFind(sum,remain);
+        return loc;
+    }
+    public int divFind(long[] num,long target){
+        int low = 0,high = num.length,
+                mid = low + (high-low) / 2;
+        while(high-low>1){
+            if(num[mid]>target){
+                high = mid;
+                mid = low +(high-low) / 2;
+            }else if(num[mid]<target){
+                low = mid;
+                mid = low +(high-low) / 2;
+            }else{
+                return mid+1;
+            }
+        }
+        if(num[low]<=target)
+            return low+1;
+        else
+            return 0;
+    }
+    public int largestMagicSquare(int[][] grid) {
+        int[][] row_sum = new int[grid.length][grid[0].length];
+        int[][] column_sum = new int[grid.length][grid[0].length];
+        int[][] lDiagSum= new int[grid.length][grid[0].length],
+                rDiagSum = new int[grid.length][grid[0].length];
+        for(int i=0;i< grid.length;i++){
+            for(int j=0;j< grid[0].length;j++){
+                row_sum[i][j] = j-1>=0?row_sum[i][j-1]+grid[i][j]:0;
+                column_sum[i][j] = i-1>=0?column_sum[i-1][j]+grid[i][j]:0;
+                lDiagSum[i][j] = i-1>=0 && j-1>=0?lDiagSum[i-1][j-1]+grid[i][j]:grid[i][j];
+            }
+        }
+        for(int i=0;i< grid.length;i++){
+            for(int j=grid[0].length-1;j>=0;j--)
+                rDiagSum[i][j] = i-1>=0 && j+1<grid[0].length?rDiagSum[i-1][j+1]+grid[i][j]:
+                        grid[i][j];
+        }
+
+        int max_size = Math.min(grid.length,grid[0].length);
+        for(int k=max_size;k>1;k--){
+            for(int i=0;i+k<= grid.length;i++){
+                for(int j=0;j+k<=grid[0].length;j++){
+                    if(checkGrid(i,j,k,row_sum,column_sum,lDiagSum,rDiagSum))
+                        return k;
+                }
+            }
+        }
+        return 1;
+    }
+    public boolean checkGrid(int i,int j,int k,int[][] row_sum,int[][] column_sum,
+                             int[][] lDiag,int [][] rDiag){
+        int sum = row_sum[i][j+k-1] - (j>0?row_sum[i][j-1]:0);
+        int sum_ = column_sum[i][j+k-1] - (i>0?row_sum[i-1][j]:0);
+        int lSum = lDiag[i+k-1][j+k-1] - (i-1>=0&&j-1>=0?lDiag[i-1][j-1]:0);
+        int rSum = rDiag[i+k-1][j] - (i-1>0&&j+k<rDiag[0].length?rDiag[i-1][j+k]:0);
+        if(sum!=sum_ || sum!=lSum||sum!=rSum)
+            return false;
+        for(int p=0;p<k;p++){
+            if(row_sum[i+p][j+k-1]-(j>0?row_sum[i+p][j-1]:0) != sum)
+                return false;
+            if(column_sum[i+k-1][j+p] -(i>0?row_sum[i-1][j]:0) !=sum_)
+                return false;
+        }
+        return true;
+    }
+    public List<Integer> pathInZigZagTree(int label) {
+        int n = (int)(Math.log(label+1) / Math.log(2));
+        int remain = (int) (label- Math.pow(2,n)+1);
+        int row_label;
+        int start_floor;
+        if(remain ==0){
+            if(n+1 % 2==1)
+                row_label = label;
+            else
+                row_label = (int) (Math.pow(2,n-1));
+            start_floor = n-1;
+        }else{
+            start_floor = n;
+            if(n+1 % 2==1)
+                row_label = label;
+            else
+                row_label = (int)(Math.pow(2,n) + Math.pow(2,n) - remain);
+        }
+        List<Integer> ret = new ArrayList<>();
+        while(row_label>=1){
+            int index;
+            if(start_floor+1 % 2==1)
+            {
+                index = row_label;
+            }else{
+                index = (int)(Math.pow(2,start_floor+1)-row_label+Math.pow(2,start_floor)-1);
+            }
+            ret.add(index);
+            row_label = row_label / 2;
+            start_floor --;
+        }
+        Collections.reverse(ret);
+        return ret;
+    }
+    public int minimumTeachings(int n, int[][] languages, int[][] friendships) {
+        Set<Integer> foreign = new HashSet<>();
+        for(int[] e:friendships){
+            if(!canCall(languages[e[0]-1],languages[e[1]-1])) {
+                foreign.add(e[0]);
+                foreign.add(e[1]);
+            }
+        }
+        int[] l = new int[n];
+        for(Integer e:foreign){
+            for(int language:languages[e-1])
+                l[language]++;
+        }
+        int max = 0;
+        for(int e:l)
+            max = Math.max(e,max);
+        return foreign.size() - max;
+    }
+    public boolean canCall(int[] e1,int[] e2){
+        Set<Integer> set = new HashSet<>();
+        for(int e:e1)
+            set.add(e);
+        for(int e:e2) {
+            if (set.contains(e))
+                return true;
+        }
+        return false;
+    }
+    public List<List<Integer>> verticalTraversal(TreeNode root) {
+        List<Node>  nodes = new ArrayList<>();
+        dfsVertical(root,0,0,nodes);
+        nodes.sort(Node::compareTo);
+        List<List<Integer>> ret = new ArrayList<>();
+        int i = 0;
+        while(i<nodes.size()){
+            List<Integer> temp = new ArrayList<>();
+            while(i<nodes.size()-1 && nodes.get(i+1).loc[1]==nodes.get(i).loc[1])
+            {
+                temp.add(nodes.get(i).val);
+                i++;
+            }
+            temp.add(nodes.get(i).val);
+            i++;
+            ret.add(new ArrayList<>(temp));
+        }
+        return ret;
+    }
+    public void dfsVertical(TreeNode root,int row,int column,List<Node> nodes){
+        if(root==null)
+            return;
+        nodes.add(new Node(new int[]{row,column},root.val));
+        dfsVertical(root.left,row+1,column-1,nodes);
+        dfsVertical(root.right,row+1,column+1,nodes);
+    }
+    public static class Node implements Comparable<Node>{
+        int[] loc;
+        int  val;
+        public Node(int[] loc,int val){
+            this.loc = loc;
+            this.val = val;
+        }
+        @Override
+        public int compareTo(Node o) {
+            if(o.loc[0]==this.loc[0] && this.loc[1]== o.loc[1])
+                return Integer.compare(this.val,o.val);
+             else if(o.loc[1]==this.loc[1])
+             return Integer.compare(this.loc[0],o.loc[0]);
+             else return Integer.compare(this.loc[1],o.loc[1]);
+        }
+    }
 }
+
